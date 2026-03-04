@@ -116,6 +116,34 @@ async function invokeWasm(request) {
 }
 
 // ---------------------------------------------------------------------------
+// Auto-migration – runs once per cold start, idempotent
+// ---------------------------------------------------------------------------
+
+let migrationsApplied = false;
+
+async function ensureMigrations(db) {
+	if (migrationsApplied) return;
+
+	await db.batch([
+		db.prepare(`CREATE TABLE IF NOT EXISTS statuses (
+			id   INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT    NOT NULL UNIQUE
+		)`),
+		db.prepare("INSERT OR IGNORE INTO statuses (name) VALUES ('todo')"),
+		db.prepare("INSERT OR IGNORE INTO statuses (name) VALUES ('in_progress')"),
+		db.prepare("INSERT OR IGNORE INTO statuses (name) VALUES ('done')"),
+		db.prepare(`CREATE TABLE IF NOT EXISTS todos (
+			id          INTEGER PRIMARY KEY AUTOINCREMENT,
+			title       TEXT    NOT NULL,
+			description TEXT    NOT NULL UNIQUE,
+			status_id   INTEGER NOT NULL REFERENCES statuses(id) ON DELETE RESTRICT
+		)`),
+	]);
+
+	migrationsApplied = true;
+}
+
+// ---------------------------------------------------------------------------
 // D1 database operations
 // ---------------------------------------------------------------------------
 
@@ -235,8 +263,9 @@ export default {
 			});
 		}
 
-		// DB action required → execute against D1.
+		// DB action required → ensure tables exist, then execute against D1.
 		try {
+			await ensureMigrations(env.DB);
 			return await executeDbAction(env.DB, wagiResult.dbAction);
 		} catch (err) {
 			return jsonResponse(500, { error: 'database error', details: String(err?.message || err) });
