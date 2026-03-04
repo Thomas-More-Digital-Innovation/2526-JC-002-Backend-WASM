@@ -2,10 +2,29 @@
 	"name": "my-first-worker",
 	"main": "my-first-worker/src/index.js",
 	"compatibility_date": "2026-03-01",
+	"build": {
+		"command": "cd my-first-worker && npm install"
+	},
 	"observability": {
 		"enabled": true
 	},
 	"compatibility_flags": [
 		"nodejs_compat"
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "todos-db",
+			"database_id": "local"
+		}
+	],
+	"rules": [
+		{
+			"type": "CompiledWasm",
+			"globs": [
+				"my-first-worker/build/*.wasm"
+			],
+			"fallthrough": true
+		}
 	]
 }
