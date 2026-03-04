@@ -166,6 +166,4 @@ dist
 !.env.example
 .wrangler/
 
-# Generated WASM artifacts
-build/
 
