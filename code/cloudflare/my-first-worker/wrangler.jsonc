@@ -12,6 +12,22 @@
 	},
 	"compatibility_flags": [
 		"nodejs_compat"
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "todos-db",
+			"database_id": "local"
+		}
+	],
+	"rules": [
+		{
+			"type": "CompiledWasm",
+			"globs": [
+				"build/*.wasm"
+			],
+			"fallthrough": true
+		}
 	]
 	/**
 	 * Smart Placement
