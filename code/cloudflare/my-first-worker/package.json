@@ -3,8 +3,13 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
+		"build": "npm run build:wasm",
+		"build:wasm": "sh -c 'GOROOT=\"$(go env GOROOT)\"; WASM_EXEC=\"$GOROOT/lib/wasm/wasm_exec.js\"; [ -f \"$WASM_EXEC\" ] || WASM_EXEC=\"$GOROOT/misc/wasm/wasm_exec.js\"; OUT_DIR=\"$(pwd)/build\"; mkdir -p \"$OUT_DIR\"; cd ../../api && GOOS=js GOARCH=wasm go build -o \"$OUT_DIR/main.wasm\" .; cp \"$WASM_EXEC\" \"$OUT_DIR/wasm_exec.js\"'",
+		"predeploy": "npm run build:wasm",
 		"deploy": "wrangler deploy",
+		"predev": "npm run build:wasm",
 		"dev": "wrangler dev",
+		"prestart": "npm run build:wasm",
 		"start": "wrangler dev",
 		"test": "vitest"
 	},
