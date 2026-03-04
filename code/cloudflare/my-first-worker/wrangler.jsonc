@@ -17,7 +17,7 @@
 		{
 			"binding": "DB",
 			"database_name": "todos-db",
-			"database_id": "local"
+			"database_id": "c35de05c-d59b-4af7-ba9b-24300d96bdba"
 		}
 	],
 	"rules": [
