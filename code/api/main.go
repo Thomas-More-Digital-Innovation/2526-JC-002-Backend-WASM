@@ -15,10 +15,15 @@ import (
 	"api/internal/model"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/uptrace/bun"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil && !errors.Is(err, os.ErrNotExist) {
+		log.Printf("warning: failed to load .env: %v", err)
+	}
+
 	ctx := context.Background()
 	db, err := database.Open(ctx, os.Getenv("DB_DSN"))
 	if err != nil {

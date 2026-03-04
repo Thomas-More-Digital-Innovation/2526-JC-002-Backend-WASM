@@ -4,37 +4,51 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"os"
+	"net/url"
 	"time"
 
 	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/dialect/sqlitedialect"
-	"github.com/uptrace/bun/driver/sqliteshim"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
 )
 
-const defaultSQLiteDSN = "file:data/todos.db?cache=shared&_pragma=foreign_keys(1)"
+const defaultPostgresDSN = "postgres://postgres:postgres@localhost:5432/todos?sslmode=disable"
 
 func Open(ctx context.Context, dsn string) (*bun.DB, error) {
 	if dsn == "" {
-		if err := os.MkdirAll("data", 0o755); err != nil {
-			return nil, fmt.Errorf("create database directory: %w", err)
-		}
-		dsn = defaultSQLiteDSN
+		dsn = defaultPostgresDSN
 	}
 
-	sqlDB, err := sql.Open(sqliteshim.ShimName, dsn)
-	if err != nil {
-		return nil, fmt.Errorf("open database connection: %w", err)
-	}
+	dsn = normalizeDSN(dsn)
 
-	sqlDB.SetMaxOpenConns(25)
-	sqlDB.SetMaxIdleConns(25)
-	sqlDB.SetConnMaxLifetime(5 * time.Minute)
+	sqlDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+	if sqlDB == nil {
+		return nil, fmt.Errorf("open database connection: nil connector")
+	}
 
 	if err := sqlDB.PingContext(ctx); err != nil {
 		_ = sqlDB.Close()
 		return nil, fmt.Errorf("ping database: %w", err)
 	}
 
-	return bun.NewDB(sqlDB, sqlitedialect.New()), nil
+	sqlDB.SetMaxOpenConns(25)
+	sqlDB.SetMaxIdleConns(25)
+	sqlDB.SetConnMaxLifetime(5 * time.Minute)
+
+	return bun.NewDB(sqlDB, pgdialect.New()), nil
+}
+
+func normalizeDSN(dsn string) string {
+	parsed, err := url.Parse(dsn)
+	if err != nil {
+		return dsn
+	}
+
+	query := parsed.Query()
+	if _, exists := query["channel_binding"]; exists {
+		query.Del("channel_binding")
+		parsed.RawQuery = query.Encode()
+	}
+
+	return parsed.String()
 }
