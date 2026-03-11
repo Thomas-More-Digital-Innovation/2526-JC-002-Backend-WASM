@@ -9,7 +9,7 @@ import (
 
 func init() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		msg := fmt.Sprintf("hello from wasi-http handler, method=%s path=%s\n", r.Method, r.URL.Path)
+		msg := fmt.Sprintf("hello from wasi-http handler-2, method=%s path=%s\n", r.Method, r.URL.Path)
 		_, _ = w.Write([]byte(msg))
 	})
 }
