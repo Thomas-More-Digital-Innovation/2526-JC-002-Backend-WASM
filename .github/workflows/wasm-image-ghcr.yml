@@ -38,6 +38,7 @@ jobs:
         run: |
           docker run --rm \
             -v "$PWD/code/wasip2test:/src" \
+            -v "/usr/local/bin/wasm-tools:/usr/local/bin/wasm-tools:ro" \
             -w /src \
             tinygo/tinygo:0.39.0 \
             tinygo build -target=wasip2-http.json -o main.wasm main.go
