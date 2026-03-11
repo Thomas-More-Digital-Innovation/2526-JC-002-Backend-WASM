@@ -27,7 +27,7 @@ jobs:
       - name: Build WASM component with TinyGo
         run: |
           docker run --rm \
-            -v "$PWD/wasip2test:/src" \
+            -v "$PWD/code/wasip2test:/src" \
             -w /src \
             tinygo/tinygo:0.39.0 \
             tinygo build -target=wasip2-http.json -o main.wasm main.go
@@ -54,8 +54,8 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: ./wasip2test
-          file: ./wasip2test/Dockerfile
+          context: ./code/wasip2test
+          file: ./code/wasip2test/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
