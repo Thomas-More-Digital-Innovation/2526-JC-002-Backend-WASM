@@ -38,6 +38,9 @@ jobs:
         run: |
           docker run --rm \
             --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp \
+            -e XDG_CACHE_HOME=/tmp/.cache \
+            -e GOCACHE=/tmp/.cache/go-build \
             -v "$PWD/code/wasip2test:/src" \
             -v "/usr/local/bin/wasm-tools:/usr/local/bin/wasm-tools:ro" \
             -w /src \
