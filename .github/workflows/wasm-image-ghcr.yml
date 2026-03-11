@@ -37,6 +37,7 @@ jobs:
       - name: Build WASM component with TinyGo
         run: |
           docker run --rm \
+            --user "$(id -u):$(id -g)" \
             -v "$PWD/code/wasip2test:/src" \
             -v "/usr/local/bin/wasm-tools:/usr/local/bin/wasm-tools:ro" \
             -w /src \
