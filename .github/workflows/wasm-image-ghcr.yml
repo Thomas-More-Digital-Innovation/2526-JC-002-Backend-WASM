@@ -5,9 +5,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "wasip2test/**"
-      - ".github/workflows/wasm-image-ghcr.yml"
 
 permissions:
   contents: read
