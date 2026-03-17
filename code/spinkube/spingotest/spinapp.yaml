@@ -1,0 +1,11 @@
+apiVersion: core.spinkube.dev/v1alpha1
+kind: SpinApp
+metadata:
+  name: spingotest
+  namespace: default
+spec:
+  image: ghcr.io/thomas-more-digital-innovation/spingotest:latest
+  replicas: 1
+  # Uncomment if the GHCR package is private.
+  # imagePullSecrets:
+  #   - name: ghcr-creds
