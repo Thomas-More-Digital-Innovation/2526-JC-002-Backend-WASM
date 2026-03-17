@@ -5,6 +5,7 @@ metadata:
   namespace: default
 spec:
   image: ghcr.io/thomas-more-digital-innovation/spingotest:latest
+  imagePullPolicy: Always
   replicas: 1
   # Uncomment if the GHCR package is private.
   # imagePullSecrets:

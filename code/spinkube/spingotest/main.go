@@ -8,8 +8,19 @@ import (
 )
 
 func init() {
-	spinhttp.Handle(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain")
-		fmt.Fprintln(w, "Hello World!")
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Home")
 	})
+
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "OK")
+	})
+
+	mux.HandleFunc("/api/hello", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Hello API")
+	})
+
+	spinhttp.Handle(mux.ServeHTTP)
 }
