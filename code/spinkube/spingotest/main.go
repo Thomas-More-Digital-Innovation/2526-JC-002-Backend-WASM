@@ -31,8 +31,18 @@ func init() {
 			return
 		}
 
-		lat := r.URL.Query().Get("lat")
-		lon := r.URL.Query().Get("lon")
+		values := url.Values{}
+		if r.URL != nil {
+			values = r.URL.Query()
+		} else if r.RequestURI != "" {
+			parsedURI, err := url.ParseRequestURI(r.RequestURI)
+			if err == nil {
+				values = parsedURI.Query()
+			}
+		}
+
+		lat := values.Get("lat")
+		lon := values.Get("lon")
 		if lat == "" {
 			lat = "51.2194"
 		}
