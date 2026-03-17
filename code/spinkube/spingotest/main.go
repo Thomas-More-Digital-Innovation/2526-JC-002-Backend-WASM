@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"time"
 
 	spinhttp "github.com/spinframework/spin-go-sdk/v2/http"
 )
@@ -56,8 +55,7 @@ func init() {
 			url.QueryEscape(lon),
 		)
 
-		client := &http.Client{Timeout: 10 * time.Second}
-		resp, err := client.Get(apiURL)
+		resp, err := spinhttp.Get(apiURL)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("weather api request failed: %v", err), http.StatusBadGateway)
 			return
