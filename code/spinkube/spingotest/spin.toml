@@ -9,7 +9,7 @@ authors = ["David Maat <r1036789@student.thomasmore.be>"]
 description = ""
 
 [[trigger.http]]
-route = "/"
+route = "/..."
 component = "spingotest"
 
 [component.spingotest]
