@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/bits"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
+	"time"
 
 	spinhttp "github.com/spinframework/spin-go-sdk/v2/http"
 	"github.com/spinframework/spin-go-sdk/v2/pg"
@@ -27,6 +30,23 @@ func requestValues(r *http.Request) url.Values {
 	return values
 }
 
+func burnCPUFor(d time.Duration) (uint64, uint64) {
+	deadline := time.Now().Add(d)
+	var iterations uint64
+	var state uint64 = 0x9e3779b97f4a7c15
+
+	for time.Now().Before(deadline) {
+		// xorshift-like mix keeps integer ALU busy and resists dead-code elimination.
+		state ^= state << 13
+		state ^= state >> 7
+		state ^= state << 17
+		state = bits.RotateLeft64(state+0x9e3779b97f4a7c15, 11)
+		iterations++
+	}
+
+	return iterations, state
+}
+
 func init() {
 	mux := http.NewServeMux()
 
@@ -39,7 +59,47 @@ func init() {
 	})
 
 	mux.HandleFunc("/api/hello", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Hello API")
+		if r.Method != http.MethodGet {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"message": "Hello API",
+		})
+	})
+
+	mux.HandleFunc("/stress", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		values := requestValues(r)
+		workMs := 250
+		if raw := values.Get("ms"); raw != "" {
+			parsed, err := strconv.Atoi(raw)
+			if err != nil || parsed < 1 || parsed > 10000 {
+				http.Error(w, "invalid ms, expected integer between 1 and 10000", http.StatusBadRequest)
+				return
+			}
+			workMs = parsed
+		}
+
+		start := time.Now()
+		iterations, checksum := burnCPUFor(time.Duration(workMs) * time.Millisecond)
+		elapsedMs := time.Since(start).Milliseconds()
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"message":     "Stress complete",
+			"workMs":      workMs,
+			"elapsedMs":   elapsedMs,
+			"iterations":  iterations,
+			"checksum":    checksum,
+			"description": "CPU stress performed for autoscaling tests",
+		})
 	})
 
 	mux.HandleFunc("/weather", func(w http.ResponseWriter, r *http.Request) {
