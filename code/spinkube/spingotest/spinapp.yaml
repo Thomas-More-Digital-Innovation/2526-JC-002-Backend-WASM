@@ -5,8 +5,35 @@ metadata:
   namespace: default
 spec:
   image: ghcr.io/thomas-more-digital-innovation/spingotest:latest
-  imagePullPolicy: Always
-  replicas: 1
+  enableAutoscaling: true
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
   # Uncomment if the GHCR package is private.
   # imagePullSecrets:
   #   - name: ghcr-creds
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: spingotest
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: core.spinkube.dev/v1alpha1
+    kind: SpinApp
+    name: spingotest
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
