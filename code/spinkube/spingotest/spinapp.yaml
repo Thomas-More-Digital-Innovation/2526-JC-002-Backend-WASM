@@ -26,7 +26,7 @@ metadata:
 spec:
   scaleTargetRef:
     apiVersion: core.spinkube.dev/v1alpha1
-    kind: SpinApp
+    kind: Deployment
     name: spingotest
   minReplicas: 1
   maxReplicas: 10
