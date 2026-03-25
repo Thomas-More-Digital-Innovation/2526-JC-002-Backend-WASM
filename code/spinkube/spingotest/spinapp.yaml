@@ -25,11 +25,32 @@ metadata:
   namespace: default
 spec:
   scaleTargetRef:
-    apiVersion: core.spinkube.dev/v1alpha1
+    apiVersion: apps/v1
     kind: Deployment
     name: spingotest
   minReplicas: 1
   maxReplicas: 10
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 10
+      selectPolicy: Max
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 10
+        - type: Pods
+          value: 10
+          periodSeconds: 10
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      selectPolicy: Max
+      policies:
+        - type: Percent
+          value: 200
+          periodSeconds: 10
+        - type: Pods
+          value: 10
+          periodSeconds: 10
   metrics:
     - type: Resource
       resource:
