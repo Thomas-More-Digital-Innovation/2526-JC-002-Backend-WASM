@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spingotest
+  namespace: default
+  labels:
+    core.spinkube.dev/app-name: spingotest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      core.spinkube.dev/app-name: spingotest
+      core.spinkube.dev/app.spingotest.status: ready
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        core.spinkube.dev/app-name: spingotest
+        core.spinkube.dev/app.spingotest.status: ready
+    spec:
+      runtimeClassName: wasmtime-spin-v2
+      containers:
+        - name: spingotest
+          image: ghcr.io/thomas-more-digital-innovation/spingotest:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /
+          env:
+            - name: SPIN_HTTP_LISTEN_ADDR
+              value: 0.0.0.0:80
+          ports:
+            - name: http-app
+              containerPort: 80
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+          startupProbe:
+            httpGet:
+              path: /
+              port: 80
+            failureThreshold: 15
+            periodSeconds: 1
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          volumeMounts:
+            - name: spin-runtime-config
+              mountPath: /runtime-config.toml
+              subPath: runtime-config.toml
+              readOnly: true
+            - name: spin-ca
+              mountPath: /etc/ssl/certs/ca-certificates.crt
+              subPath: ca-certificates.crt
+              readOnly: true
+      volumes:
+        - name: spin-runtime-config
+          secret:
+            secretName: spingotest-760b133c
+            optional: true
+            items:
+              - key: runtime-config.toml
+                path: runtime-config.toml
+        - name: spin-ca
+          secret:
+            secretName: spin-ca
+            optional: true
+            items:
+              - key: ca-certificates.crt
+                path: ca-certificates.crt

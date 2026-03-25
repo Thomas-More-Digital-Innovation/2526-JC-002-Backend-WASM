@@ -1,60 +1,26 @@
-apiVersion: core.spinkube.dev/v1alpha1
-kind: SpinApp
+apiVersion: http.keda.sh/v1alpha1
+kind: HTTPScaledObject
 metadata:
   name: spingotest
   namespace: default
 spec:
-  image: ghcr.io/thomas-more-digital-innovation/spingotest:latest
-  enableAutoscaling: true
-  resources:
-    requests:
-      cpu: "100m"
-      memory: "128Mi"
-    limits:
-      cpu: "500m"
-      memory: "256Mi"
-  # Uncomment if the GHCR package is private.
-  # imagePullSecrets:
-  #   - name: ghcr-creds
-
----
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: spingotest
-  namespace: default
-spec:
+  scaledownPeriod: 10
+  # cluster must keep some replica warm for CPU-heavy work
+  replicas:
+    min: 0
+    max: 20
+  hosts:
+    - jc-wasm.digitalinnovation.be
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: spingotest
-  minReplicas: 1
-  maxReplicas: 10
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 10
-      selectPolicy: Max
-      policies:
-        - type: Percent
-          value: 100
-          periodSeconds: 10
-        - type: Pods
-          value: 10
-          periodSeconds: 10
-    scaleUp:
-      stabilizationWindowSeconds: 0
-      selectPolicy: Max
-      policies:
-        - type: Percent
-          value: 200
-          periodSeconds: 10
-        - type: Pods
-          value: 10
-          periodSeconds: 10
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 70
+    service: spingotest
+    port: 80
+  # prefer requestRate scaled to sustainable pod RPS (adjust from load tests)
+  scalingMetric:
+    requestRate:
+      targetValue: 4
+      granularity: 5s
+  # keep pending requests relaxed for one/few intense/multi-second requests
+  targetPendingRequests: 4

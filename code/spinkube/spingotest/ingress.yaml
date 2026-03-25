@@ -1,20 +1,14 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
 metadata:
   name: spingotest
-  namespace: default
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
+  namespace: keda
 spec:
-  ingressClassName: traefik
-  rules:
-    - host: jc-wasm.digitalinnovation.be
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: spingotest
-                port:
-                  number: 80
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`jc-wasm.digitalinnovation.be`)
+      kind: Rule
+      services:
+        - name: keda-add-ons-http-interceptor-proxy
+          port: 8080
