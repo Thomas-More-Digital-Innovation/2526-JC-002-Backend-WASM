@@ -4,7 +4,7 @@ metadata:
   name: spingotest
   namespace: default
 spec:
-  scaledownPeriod: 10
+  scaledownPeriod: 1
   # cluster must keep some replica warm for CPU-heavy work
   replicas:
     min: 0

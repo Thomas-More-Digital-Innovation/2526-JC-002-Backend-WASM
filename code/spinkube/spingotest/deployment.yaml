@@ -36,22 +36,22 @@ spec:
             - name: http-app
               containerPort: 80
               protocol: TCP
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 80
-            initialDelaySeconds: 0
-            periodSeconds: 1
-            failureThreshold: 3
-            successThreshold: 1
-            timeoutSeconds: 1
-          startupProbe:
-            httpGet:
-              path: /
-              port: 80
-            failureThreshold: 15
-            periodSeconds: 1
-            timeoutSeconds: 1
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 80
+          #   initialDelaySeconds: 0
+          #   periodSeconds: 1
+          #   failureThreshold: 3
+          #   successThreshold: 1
+          #   timeoutSeconds: 1
+          # startupProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 80
+          #   failureThreshold: 15
+          #   periodSeconds: 1
+          #   timeoutSeconds: 1
           resources:
             requests:
               cpu: "100m"
