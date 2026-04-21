@@ -7,7 +7,7 @@ spec:
   scaledownPeriod: 1
   # cluster must keep some replica warm for CPU-heavy work
   replicas:
-    min: 0
+    min: 1
     max: 20
   hosts:
     - jc-wasm.digitalinnovation.be
