@@ -19,16 +19,16 @@ Next I looked for a way to run my shiny wasm binary. There are quite a few optio
 
 When I looked on how to deploy this, I first did some market research, then I stumbled on
 [Fermyon](https://www.fermyon.com/), they advertise serverless WASM in kubernetes through Spin/SpinKube, now this was interesting! Sadly I did not get access to the Fermyon platform to test a deployment, so I cannot speak on how well their service works, but I did make a spin app and deployed it to a local k3s cluster, where I saw remarkably low resource usage when idling, 5m cpu and just 6Mi of RAM, I ran this on very old hardware (Xeon E5-2660 with HDD Yikes!), so my results for performance are not representative for today's hardware. I set up autoscaling with a HPA, which worked very well:
-![[LoadTestHPA.png]]
+![Load Test HPA](LoadTestHPA.png)
 Above is a load test performed with K6 in grafana cloud.
 
 Despite the extremely low resource usage at idle, I still wondered about the claims from Fermyon of them running serverless and wondered what the results would be with my DIY cluster. So I installed KEDA and set up scaling based on incoming HTTP requests, with scale-to-zero for the wasm app itself. What I noticed is the readiness and liveliness checks are not actually needed, because of how fast the wasm runtime is able to spin up the extra servers. I was able to get the cold starts down to ~3s with a sata ssd, which seems slow, until you remember that the hardware is 14 years old. Most of the time is waiting for the k8s resources to be created. Below is a load test of this setup with KEDA:
-![[LoadTestKEDA.png]]
+![Load Test KEDA](LoadTestKEDA.png)
 
 In conclusion, the tradeoff of going serverless on your own k8s cluster doesn't make sense unless you have an immense amount of applications that won't have a big load. WASM doesn’t eliminate cold starts in kubernetes, it just makes the container startup negligible compared to orchestration overhead.
 
 But maybe clouflare can offer a solution with their new workers beta for containers, I deployed the template which was quite easy thanks to the excellent documentation/wrangler automation. 
-![[Pasted image 20260423201318.png]]
+![Cloudflare Containers Beta](Pasted%20image%2020260423201318.png)
 
 Then all that's left is to switch out the default linux/amd64 container for a wasm equivalent, so I read the documentation from cloudflare, when I stumbled upon this: ["Your container image must be able to run on the `linux/amd64` architecture, but aside from that, has few limitations."](https://developers.cloudflare.com/containers/get-started/#the-container-image). this means what I was trying to achieve is impossible/unsupported. Maybe in the future cloudflare will support it, as this technology is quite similar to their standard workers platform with less overhead, since the isolation is built in, as opposed to having to build it around the V8 engine. 
 
