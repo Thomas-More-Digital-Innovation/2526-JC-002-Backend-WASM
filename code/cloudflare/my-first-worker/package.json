@@ -14,9 +14,9 @@
 		"test": "vitest"
 	},
 	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "^0.12.4",
+		"@cloudflare/vitest-pool-workers": "^0.13.2",
 		"vitest": "~3.2.0",
-		"wrangler": "^4.70.0"
+		"wrangler": "^4.75.0"
 	},
 	"dependencies": {
 		"@bjorn3/browser_wasi_shim": "^0.4.2"
